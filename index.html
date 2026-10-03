@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PINEAPPLE'S RNG</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --black: #070707;
+    --black2: #101010;
+    --black3: #181818;
+    --line: #292929;
+    --white: #eeeeee;
+    --gray: #888;
+    --dark-gray: #555;
+    --green: #69ff8b;
+    --green-dark: #2fa34d;
+    --red: #ff5757;
+}
+
+html {
+    background: var(--black);
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(255,255,255,.055),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 50% 100%,
+            rgba(80,255,120,.025),
+            transparent 40%
+        ),
+        var(--black);
+    color: var(--white);
+    font-family:
+        Arial,
+        "Noto Sans KR",
+        sans-serif;
+}
+
+/* =========================================
+   전체
+========================================= */
+
+.container {
+    width: min(760px, calc(100% - 26px));
+    margin: auto;
+    padding: 42px 0 70px;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.logo {
+    font-size: 25px;
+    color: #555;
+    letter-spacing: 7px;
+    margin-bottom: 14px;
+    user-select: none;
+}
+
+.title {
+    margin: 0;
+    font-size: clamp(29px, 8vw, 48px);
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: #f2f2f2;
+}
+
+.title span {
+    color: var(--green);
+}
+
+.header-line {
+    width: 80px;
+    height: 1px;
+    background: #444;
+    margin: 18px auto 0;
+}
+
+/* =========================================
+   NAV
+========================================= */
+
+.nav {
+    display: flex;
+    gap: 1px;
+    margin-bottom: 18px;
+    background: var(--line);
+    border: 1px solid var(--line);
+}
+
+.nav button {
+    flex: 1;
+    border: 0;
+    padding: 15px 10px;
+    background: var(--black2);
+    color: #777;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.nav button:hover {
+    color: #ccc;
+    background: #151515;
+}
+
+.nav button.active {
+    background: #1d1d1d;
+    color: var(--green);
+    box-shadow: inset 0 -2px 0 var(--green);
+}
+
+/* =========================================
+   CARD
+========================================= */
+
+.card {
+    background: rgba(14,14,14,.94);
+    border: 1px solid var(--line);
+    padding: 22px;
+    margin-bottom: 14px;
+}
+
+.card h2 {
+    margin: 0 0 18px;
+    font-size: 18px;
+    letter-spacing: .5px;
+}
+
+/* =========================================
+   INPUT / SELECT
+========================================= */
+
+input,
+select {
+    border: 1px solid #333;
+    background: #0a0a0a;
+    color: #eee;
+    border-radius: 4px;
+    padding: 11px 12px;
+    font: inherit;
+    outline: none;
+}
+
+input:focus,
+select:focus {
+    border-color: #777;
+}
+
+.add-box {
+    display: flex;
+    gap: 7px;
+}
+
+.add-box input {
+    flex: 1;
+}
+
+.add-box button {
+    border: 1px solid #444;
+    background: #e8e8e8;
+    color: #080808;
+    padding: 10px 17px;
+    border-radius: 4px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.add-box button:hover {
+    background: white;
+}
+
+/* =========================================
+   PARTICIPANTS
+========================================= */
+
+.player-count {
+    margin: 16px 0 9px;
+    color: #666;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.players {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.player {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 10px;
+    background: #151515;
+    border: 1px solid #292929;
+    color: #ccc;
+    border-radius: 4px;
+    animation: playerIn .2s ease;
+}
+
+@keyframes playerIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.player button {
+    border: 0;
+    background: none;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+}
+
+.player button:hover {
+    color: var(--red);
+}
+
+/* =========================================
+   SETTINGS
+========================================= */
+
+.setting {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 12px 0;
+    color: #bbb;
+}
+
+.team-count-input {
+    width: 90px;
+    text-align: center;
+}
+
+.team-sizes {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.team-size-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: #121212;
+    border: 1px solid #242424;
+}
+
+.team-size-input {
+    width: 75px;
+    text-align: center;
+}
+
+/* =========================================
+   BAN
+========================================= */
+
+.ban-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 9px 0;
+}
+
+.ban-row select {
+    flex: 1;
+    min-width: 0;
+}
+
+.ban-row button {
+    border: 0;
+    background: transparent;
+    color: #777;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.ban-row button:hover {
+    color: var(--red);
+}
+
+.add-ban {
+    margin-top: 8px;
+    border: 1px solid #333;
+    background: #111;
+    color: #aaa;
+    padding: 9px 13px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.add-ban:hover {
+    color: white;
+    border-color: #555;
+}
+
+/* =========================================
+   MAIN BUTTON
+========================================= */
+
+.main-button {
+    width: 100%;
+    border: 1px solid #444;
+    background: #ededed;
+    color: #050505;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: .15s;
+}
+
+.main-button:hover {
+    background: white;
+    transform: translateY(-1px);
+}
+
+.main-button:active {
+    transform: translateY(1px);
+}
+
+/* =========================================
+   RESULT
+========================================= */
+
+.result {
+    display: grid;
+    gap: 9px;
+}
+
+.team {
+    background: #111;
+    border: 1px solid #292929;
+    padding: 16px;
+    animation: resultIn .4s ease both;
+}
+
+@keyframes resultIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.team h3 {
+    margin: 0 0 11px;
+    color: var(--green);
+    font-size: 15px;
+    letter-spacing: 1px;
+}
+
+.member {
+    background: #191919;
+    border-left: 2px solid #333;
+    padding: 9px 11px;
+    margin-top: 5px;
+    color: #ccc;
+}
+
+/* =========================================
+   DRAW
+========================================= */
+
+.draw-box {
+    text-align: center;
+}
+
+.draw-display {
+    height: 210px;
+    margin: 22px 0;
+    background:
+        radial-gradient(
+            circle,
+            #191919 0%,
+            #0a0a0a 65%
+        );
+    border: 1px solid #292929;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow: hidden;
+
+    font-size: clamp(30px, 9vw, 52px);
+    font-weight: 900;
+    letter-spacing: 2px;
+
+    color: #777;
+
+    position: relative;
+}
+
+.draw-display::before {
+    content: "RNG";
+    position: absolute;
+    font-size: 100px;
+    color: rgba(255,255,255,.018);
+    font-weight: 900;
+    letter-spacing: 10px;
+    pointer-events: none;
+}
+
+.draw-display.spinning {
+    color: #ccc;
+    animation: rngShake .075s infinite alternate;
+}
+
+@keyframes rngShake {
+    from {
+        transform: translateX(-2px);
+    }
+
+    to {
+        transform: translateX(2px);
+    }
+}
+
+.winner {
+    color: var(--green) !important;
+    border-color: #315a3a;
+    animation: winner .7s cubic-bezier(.2,1.5,.5,1);
+}
+
+@keyframes winner {
+    0% {
+        transform: scale(.65);
+        opacity: 0;
+        text-shadow: none;
+    }
+
+    55% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        text-shadow: 0 0 20px rgba(105,255,139,.3);
+    }
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    color: #888;
+    font-size: 14px;
+}
+
+.checkbox input {
+    accent-color: var(--green);
+}
+
+.draw-message {
+    min-height: 20px;
+    margin-top: 12px;
+}
+
+.error {
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 11px;
+}
+
+.success {
+    color: var(--green);
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 12px;
+}
+
+/* =========================================
+   RESTART
+========================================= */
+
+.restart-button {
+    margin-top: 10px;
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    color: #aaa;
+    border: 1px solid #333;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.restart-button:hover {
+    color: white;
+    border-color: #666;
+}
+
+/* =========================================
+   HIDDEN
+========================================= */
+
+.hidden {
+    display: none !important;
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 500px) {
+
+    .container {
+        width: calc(100% - 16px);
+        padding-top: 27px;
+    }
+
+    .title {
+        letter-spacing: 1px;
+    }
+
+    .logo {
+        font-size: 19px;
+        letter-spacing: 5px;
+    }
+
+    .card {
+        padding: 17px;
+    }
+
+    .ban-row {
+        flex-wrap: wrap;
+    }
+
+    .ban-row select {
+        min-width: calc(50% - 24px);
+    }
+
+    .draw-display {
+        height: 180px;
+    }
+}
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+        <div class="logo">PINEAPPLE</div>
+
+        <h1 class="title">
+            PINEAPPLE'S <span>RNG</span>
+        </h1>
+
+        <div class="header-line"></div>
+
+    </header>
+
+
+    <!-- NAV -->
+
+    <nav class="nav">
+
+        <button
+            id="teamTab"
+            class="active"
+            onclick="showPage('team')">
+
+            TEAM RANDOMIZER
+
+        </button>
+
+        <button
+            id="drawTab"
+            onclick="showPage('draw')">
+
+            PICK ONE
+
+        </button>
+
+    </nav>
+
+
+    <!-- =====================================
+         TEAM RANDOMIZER
+    ====================================== -->
+
+    <section id="teamPage">
+
+        <!-- 참가자 -->
+
+        <div class="card">
+
+            <h2>PARTICIPANTS</h2>
+
+            <div class="add-box">
+
+                <input
+                    id="teamPlayerInput"
+                    placeholder="이름 입력"
+                    maxlength="30"
+                    onkeydown="enterAdd(event, 'team')">
+
+                <button
+                    onclick="addSharedPlayer('team')">
+
+                    ADD
+
+                </button>
+
+            </div>
+
+            <div
+                id="teamPlayerCount"
+                class="player-count">
+            </div>
+
+            <div
+                id="teamPlayers"
+                class="players">
+            </div>
+
+        </div>
+
+
+        <!-- 팀 설정 -->
+
+        <div class="card">
+
+            <h2>TEAM SETTINGS</h2>
+
+            <div class="setting">
+
+                <span>TEAM COUNT</span>
+
+                <input
+                    id="teamCount"
+                    class="team-count-input"
+                    type="number"
+                    min="1"
+                    max="20"
+                    value="2"
+                    onchange="teamCountChanged()">
+
+            </div>
+
+            <div
+                id="teamSizes"
+                class="team-sizes">
+            </div>
+
+        </div>
+
+
+        <!-- 같은 팀 금지 -->
+
+        <div class="card">
+
+            <h2>DO NOT TEAM TOGETHER</h2>
+
+            <div id="banList"></div>
+
+            <button
+                class="add-ban"
+                onclick="addBan()">
+
+                + ADD RESTRICTION
+
+            </button>
+
+        </div>
+
+
+        <!-- 배정 -->
+
+        <div class="card">
+
+            <button
+                class="main-button"
+                onclick="makeTeams()">
+
+                GENERATE TEAMS
+
+            </button>
+
+            <div
+                id="teamError"
+                class="error">
+            </div>
+
+        </div>
+
+
+        <!-- 결과 -->
+
+        <div
+            id="teamResultCard"
+            class="card hidden">
+
+            <h2>RESULT</h2>
+
+            <div
+                id="teamResult"
+                class="result">
+            </div>
+
+            <br>
+
+            <button
+                class="main-button"
+                onclick="makeTeams()">
+
+                GENERATE AGAIN
+
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================
+         PICK ONE
+    ====================================== -->
+
+    <section
+        id="drawPage"
+        class="hidden">
+
+        <!-- 참가자 -->
+
+        <div class="card">
+
+            <h2>PARTICIPANTS</h2>
+
+            <div class="add-box">
+
+                <input
+                    id="drawPlayerInput"
+                    placeholder="이름 입력"
+                    maxlength="30"
+                    onkeydown="enterAdd(event, 'draw')">
+
+                <button
+                    onclick="addSharedPlayer('draw')">
+
+                    ADD
+
+                </button>
+
+            </div>
+
+            <div
+                id="drawPlayerCount"
+                class="player-count">
+            </div>
+
+            <div
+                id="drawPlayers"
+                class="players">
+            </div>
+
+        </div>
+
+
+        <!-- 뽑기 -->
+
+        <div class="card draw-box">
+
+            <h2>PICK ONE</h2>
+
+            <div class="checkbox">
+
+                <input
+                    type="checkbox"
+                    id="noRepeat">
+
+                <label for="noRepeat">
+                    NO DUPLICATES
+                </label>
+
+            </div>
+
+
+            <div
+                id="drawDisplay"
+                class="draw-display">
+
+                ???
+
+            </div>
+
+
+            <button
+                class="main-button"
+                id="drawButton"
+                onclick="drawOne()">
+
+                GENERATE
+
+            </button>
+
+
+            <div
+                id="drawMessage"
+                class="draw-message">
+            </div>
+
+
+            <button
+                id="restartDrawButton"
+                class="restart-button hidden"
+                onclick="restartDraw()">
+
+                ↻ RESTART
+
+            </button>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   SHARED PARTICIPANTS
+========================================= */
+
+let players = [];
+
+
+/* PICK ONE에서 이미 뽑힌 사람 */
+let usedPlayers = [];
+
+
+/* =========================================
+   PAGE SWITCH
+========================================= */
+
+function showPage(page) {
+
+    const teamPage =
+        document.getElementById("teamPage");
+
+    const drawPage =
+        document.getElementById("drawPage");
+
+    const teamTab =
+        document.getElementById("teamTab");
+
+    const drawTab =
+        document.getElementById("drawTab");
+
+
+    if (page === "team") {
+
+        teamPage.classList.remove("hidden");
+        drawPage.classList.add("hidden");
+
+        teamTab.classList.add("active");
+        drawTab.classList.remove("active");
+
+    } else {
+
+        teamPage.classList.add("hidden");
+        drawPage.classList.remove("hidden");
+
+        teamTab.classList.remove("active");
+        drawTab.classList.add("active");
+
+    }
+}
+
+
+/* =========================================
+   PARTICIPANT ADD
+========================================= */
+
+function addSharedPlayer(source) {
+
+    const input =
+        document.getElementById(
+            source === "team"
+                ? "teamPlayerInput"
+                : "drawPlayerInput"
+        );
+
+    const name =
+        input.value.trim();
+
+
+    if (!name) return;
+
+
+    if (players.includes(name)) {
+
+        alert("이미 등록된 이름입니다.");
+
+        return;
+    }
+
+
+    players.push(name);
+
+    input.value = "";
+
+
+    renderPlayers();
+    updateBanSelects();
+
+    /*
+       참가자 수가 바뀌면
+       팀 인원도 자동으로 재계산
+    */
+
+    autoSetTeamSizes();
+}
+
+
+/* =========================================
+   PARTICIPANT REMOVE
+========================================= */
+
+function removeSharedPlayer(index) {
+
+    const removed =
+        players[index];
+
+    players.splice(index, 1);
+
+
+    usedPlayers =
+        usedPlayers.filter(
+            name =>
+                name !== removed &&
+                players.includes(name)
+        );
+
+
+    renderPlayers();
+    updateBanSelects();
+
+    autoSetTeamSizes();
+}
+
+
+/* =========================================
+   RENDER PARTICIPANTS
+========================================= */
+
+function renderPlayers() {
+
+    const teamList =
+        document.getElementById(
+            "teamPlayers"
+        );
+
+    const drawList =
+        document.getElementById(
+            "drawPlayers"
+        );
+
+
+    teamList.innerHTML = "";
+    drawList.innerHTML = "";
+
+
+    players.forEach(
+        (player, index) => {
+
+            const teamDiv =
+                document.createElement("div");
+
+            teamDiv.className = "player";
+
+            teamDiv.innerHTML = `
+                ${escapeHtml(player)}
+
+                <button
+                    onclick="removeSharedPlayer(${index})">
+                    ×
+                </button>
+            `;
+
+            teamList.appendChild(teamDiv);
+
+
+            const drawDiv =
+                document.createElement("div");
+
+            drawDiv.className = "player";
+
+            drawDiv.innerHTML = `
+                ${escapeHtml(player)}
+
+                <button
+                    onclick="removeSharedPlayer(${index})">
+                    ×
+                </button>
+            `;
+
+            drawList.appendChild(drawDiv);
+
+        }
+    );
+
+
+    document.getElementById(
+        "teamPlayerCount"
+    ).textContent =
+        `${players.length} PARTICIPANTS`;
+
+
+    document.getElementById(
+        "drawPlayerCount"
+    ).textContent =
+        `${players.length} PARTICIPANTS`;
+}
+
+
+/* =========================================
+   ENTER ADD
+========================================= */
+
+function enterAdd(event, source) {
+
+    if (event.key === "Enter") {
+
+        addSharedPlayer(source);
+
+    }
+}
+
+
+/* =========================================
+   TEAM COUNT CHANGE
+========================================= */
+
+function teamCountChanged() {
+
+    const input =
+        document.getElementById(
+            "teamCount"
+        );
+
+
+    let count =
+        Number(input.value);
+
+
+    if (count < 1) {
+        count = 1;
+        input.value = 1;
+    }
+
+
+    if (count > 20) {
+        count = 20;
+        input.value = 20;
+    }
+
+
+    autoSetTeamSizes();
+}
+
+
+/* =========================================
+   TEAM NAME
+========================================= */
+
+function teamName(index) {
+
+    /*
+       A, B, C ... Z
+       20팀까지 있으므로 충분함
+    */
+
+    return String.fromCharCode(
+        65 + index
+    ) + "팀";
+}
+
+
+/* =========================================
+   AUTOMATIC TEAM SIZE
+========================================= */
+
+function autoSetTeamSizes() {
+
+    const teamCount =
+        Number(
+            document.getElementById(
+                "teamCount"
+            ).value
+        );
+
+
+    const container =
+        document.getElementById(
+            "teamSizes"
+        );
+
+
+    container.innerHTML = "";
+
+
+    if (teamCount < 1) return;
+
+
+    /*
+       2팀일 경우:
+
+       4명
+       A = 2
+       B = 2
+
+       5명
+       A = 2
+       B = 3
+
+       즉 나머지 1명을 B팀에 넣음.
+    */
+
+    const base =
+        Math.floor(
+            players.length / teamCount
+        );
+
+
+    const remainder =
+        players.length % teamCount;
+
+
+    const sizes =
+        Array(teamCount)
+            .fill(base);
+
+
+    /*
+       남는 인원은 뒤쪽 팀부터 배정.
+       2팀에서는 자연스럽게
+       B팀이 1명 더 많아짐.
+    */
+
+    for (
+        let i = 0;
+        i < remainder;
+        i++
+    ) {
+
+        sizes[
+            teamCount - 1 - i
+        ]++;
+
+    }
+
+
+    sizes.forEach(
+        (size, index) => {
+
+            const row =
+                document.createElement("div");
+
+            row.className =
+                "team-size-row";
+
+
+            row.innerHTML = `
+                <span>
+                    ${teamName(index)}
+                </span>
+
+                <input
+                    class="team-size-input"
+                    type="number"
+                    min="0"
+                    value="${size}"
+                    id="teamSize${index}">
+            `;
+
+
+            container.appendChild(row);
+
+        }
+    );
+}
+
+
+/* =========================================
+   BAN PAIR ADD
+========================================= */
+
+function addBan() {
+
+    if (players.length < 2) {
+
+        alert(
+            "참가자가 2명 이상 필요합니다."
+        );
+
+        return;
+    }
+
+
+    const container =
+        document.getElementById(
+            "banList"
+        );
+
+
+    const row =
+        document.createElement("div");
+
+    row.className = "ban-row";
+
+
+    row.innerHTML = `
+        <select class="ban-player"></select>
+
+        <span>×</span>
+
+        <select class="ban-player"></select>
+
+        <button
+            onclick="this.parentElement.remove()">
+
+            ×
+
+        </button>
+    `;
+
+
+    container.appendChild(row);
+
+    updateBanSelects();
+}
+
+
+/* =========================================
+   UPDATE BAN SELECTS
+========================================= */
+
+function updateBanSelects() {
+
+    document
+        .querySelectorAll(".ban-player")
+        .forEach(select => {
+
+            const oldValue =
+                select.value;
+
+
+            select.innerHTML = "";
+
+
+            players.forEach(
+                player => {
+
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+
+                    option.value =
+                        player;
+
+                    option.textContent =
+                        player;
+
+                    select.appendChild(
+                        option
+                    );
+
+                }
+            );
+
+
+            if (
+                players.includes(
+                    oldValue
+                )
+            ) {
+
+                select.value =
+                    oldValue;
+
+            }
+
+        });
+}
+
+
+/* =========================================
+   GET BAN PAIRS
+========================================= */
+
+function getBannedPairs() {
+
+    const pairs = [];
+
+
+    document
+        .querySelectorAll(".ban-row")
+        .forEach(row => {
+
+            const selects =
+                row.querySelectorAll(
+                    "select"
+                );
+
+
+            if (
+                selects.length !== 2
+            ) return;
+
+
+            const a =
+                selects[0].value;
+
+            const b =
+                selects[1].value;
+
+
+            if (
+                a &&
+                b &&
+                a !== b
+            ) {
+
+                pairs.push([
+                    a,
+                    b
+                ]);
+
+            }
+
+        });
+
+
+    return pairs;
+}
+
+
+/* =========================================
+   MAKE TEAMS
+========================================= */
+
+function makeTeams() {
+
+    const error =
+        document.getElementById(
+            "teamError"
+        );
+
+
+    error.textContent = "";
+
+
+    if (players.length === 0) {
+
+        error.textContent =
+            "참가자를 먼저 추가하세요.";
+
+        return;
+    }
+
+
+    const teamCount =
+        Number(
+            document.getElementById(
+                "teamCount"
+            ).value
+        );
+
+
+    const sizes = [];
+
+
+    for (
+        let i = 0;
+        i < teamCount;
+        i++
+    ) {
+
+        const size =
+            Number(
+                document.getElementById(
+                    `teamSize${i}`
+                ).value
+            );
+
+
+        if (
+            !Number.isInteger(size) ||
+            size < 0
+        ) {
+
+            error.textContent =
+                "팀 인원은 0 이상의 정수여야 합니다.";
+
+            return;
+        }
+
+
+        sizes.push(size);
+    }
+
+
+    const total =
+        sizes.reduce(
+            (a, b) => a + b,
+            0
+        );
+
+
+    if (
+        total !== players.length
+    ) {
+
+        error.textContent =
+            `팀 인원의 합계(${total}명)가 참가자 수(${players.length}명)와 같아야 합니다.`;
+
+        return;
+    }
+
+
+    const bannedPairs =
+        getBannedPairs();
+
+
+    /*
+       가능한 배정을 랜덤하게 찾음.
+    */
+
+    for (
+        let attempt = 0;
+        attempt < 50000;
+        attempt++
+    ) {
+
+        const shuffled =
+            [...players].sort(
+                () =>
+                    Math.random() - .5
+            );
+
+
+        const teams = [];
+
+        let index = 0;
+
+
+        for (
+            let i = 0;
+            i < teamCount;
+            i++
+        ) {
+
+            teams.push(
+                shuffled.slice(
+                    index,
+                    index + sizes[i]
+                )
+            );
+
+
+            index += sizes[i];
+
+        }
+
+
+        if (
+            isValidTeams(
+                teams,
+                bannedPairs
+            )
+        ) {
+
+            showTeams(teams);
+
+            return;
+        }
+
+    }
+
+
+    error.textContent =
+        "조건을 만족하는 배정을 찾을 수 없습니다.";
+}
+
+
+/* =========================================
+   TEAM VALIDATION
+========================================= */
+
+function isValidTeams(
+    teams,
+    bannedPairs
+) {
+
+    for (
+        const [a, b]
+        of bannedPairs
+    ) {
+
+        for (
+            const team
+            of teams
+        ) {
+
+            if (
+                team.includes(a) &&
+                team.includes(b)
+            ) {
+
+                return false;
+
+            }
+
+        }
+
+    }
+
+
+    return true;
+}
+
+
+/* =========================================
+   SHOW TEAM RESULT
+========================================= */
+
+function showTeams(teams) {
+
+    const result =
+        document.getElementById(
+            "teamResult"
+        );
+
+
+    result.innerHTML = "";
+
+
+    teams.forEach(
+        (team, index) => {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "team";
+
+
+            div.innerHTML = `
+                <h3>
+                    ${teamName(index)}
+                    · ${team.length}명
+                </h3>
+
+                ${team.map(
+                    member => `
+                        <div class="member">
+                            ${escapeHtml(member)}
+                        </div>
+                    `
+                ).join("")}
+            `;
+
+
+            result.appendChild(div);
+
+        }
+    );
+
+
+    document
+        .getElementById(
+            "teamResultCard"
+        )
+        .classList.remove(
+            "hidden"
+        );
+}
+
+
+/* =========================================
+   PICK ONE
+========================================= */
+
+function drawOne() {
+
+    const display =
+        document.getElementById(
+            "drawDisplay"
+        );
+
+
+    const message =
+        document.getElementById(
+            "drawMessage"
+        );
+
+
+    const restartButton =
+        document.getElementById(
+            "restartDrawButton"
+        );
+
+
+    message.textContent = "";
+    message.className =
+        "draw-message";
+
+
+    if (players.length === 0) {
+
+        message.className =
+            "error";
+
+        message.textContent =
+            "참가자를 먼저 추가하세요.";
+
+        return;
+    }
+
+
+    const noRepeat =
+        document.getElementById(
+            "noRepeat"
+        ).checked;
+
+
+    let candidates =
+        [...players];
+
+
+    /*
+       중복 없음
+    */
+
+    if (noRepeat) {
+
+        candidates =
+            candidates.filter(
+                player =>
+                    !usedPlayers.includes(
+                        player
+                    )
+            );
+
+
+        /*
+           모두 뽑힌 상태
+        */
+
+        if (
+            candidates.length === 0
+        ) {
+
+            display.textContent =
+                "COMPLETE";
+
+            display.classList.remove(
+                "spinning"
+            );
+
+            message.className =
+                "success";
+
+            message.textContent =
+                "ALL PARTICIPANTS HAVE BEEN PICKED.";
+
+            restartButton.classList.remove(
+                "hidden"
+            );
+
+            return;
+        }
+
+    }
+
+
+    const winner =
+        candidates[
+            Math.floor(
+                Math.random() *
+                candidates.length
+            )
+        ];
+
+
+    restartButton.classList.add(
+        "hidden"
+    );
+
+
+    display.classList.remove(
+        "winner"
+    );
+
+    display.classList.add(
+        "spinning"
+    );
+
+
+    /*
+       RNG 애니메이션
+
+       처음에는 매우 빠름
+       ↓
+       점점 느려짐
+       ↓
+       당첨자
+    */
+
+    const duration =
+        3000;
+
+
+    const start =
+        Date.now();
+
+
+    function animationFrame() {
+
+        const elapsed =
+            Date.now() - start;
+
+
+        const progress =
+            Math.min(
+                elapsed / duration,
+                1
+            );
+
+
+        /*
+           easeOutCubic
+        */
+
+        const ease =
+            1 -
+            Math.pow(
+                1 - progress,
+                3
+            );
+
+
+        const interval =
+            35 +
+            ease * 330;
+
+
+        const randomName =
+            candidates[
+                Math.floor(
+                    Math.random() *
+                    candidates.length
+                )
+            ];
+
+
+        display.textContent =
+            randomName;
+
+
+        if (
+            progress < 1
+        ) {
+
+            setTimeout(
+                animationFrame,
+                interval
+            );
+
+        } else {
+
+            /*
+               최종 당첨자
+            */
+
+            display.textContent =
+                winner;
+
+
+            display.classList.remove(
+                "spinning"
+            );
+
+
+            void display.offsetWidth;
+
+
+            display.classList.add(
+                "winner"
+            );
+
+
+            if (noRepeat) {
+
+                usedPlayers.push(
+                    winner
+                );
+
+            }
+
+
+            message.className =
+                "success";
+
+
+            message.textContent =
+                "SELECTED: " + winner;
+
+
+            /*
+               방금 마지막 사람까지
+               뽑힌 경우
+            */
+
+            if (
+                noRepeat &&
+                usedPlayers.length >=
+                    players.length
+            ) {
+
+                setTimeout(
+                    () => {
+
+                        message.textContent =
+                            "ALL PARTICIPANTS HAVE BEEN PICKED.";
+
+                        restartButton.classList.remove(
+                            "hidden"
+                        );
+
+                    },
+                    700
+                );
+
+            }
+
+        }
+
+    }
+
+
+    animationFrame();
+}
+
+
+/* =========================================
+   RESTART PICK ONE
+========================================= */
+
+function restartDraw() {
+
+    usedPlayers = [];
+
+
+    const display =
+        document.getElementById(
+            "drawDisplay"
+        );
+
+
+    const message =
+        document.getElementById(
+            "drawMessage"
+        );
+
+
+    const restartButton =
+        document.getElementById(
+            "restartDrawButton"
+        );
+
+
+    display.classList.remove(
+        "winner",
+        "spinning"
+    );
+
+
+    display.textContent =
+        "???" ;
+
+
+    message.textContent = "";
+    message.className =
+        "draw-message";
+
+
+    restartButton.classList.add(
+        "hidden"
+    );
+
+}
+
+
+/* =========================================
+   HTML ESCAPE
+========================================= */
+
+function escapeHtml(text) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        text;
+
+
+    return div.innerHTML;
+}
+
+
+/* =========================================
+   INITIALIZE
+========================================= */
+
+renderPlayers();
+autoSetTeamSizes();
+
+</script>
+
+</body>
+</html>
